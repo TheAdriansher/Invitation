@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Una pregunta importante...</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,600&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rose: #e8a0b0;
+    --deep-rose: #c4607a;
+    --blush: #f5dce2;
+    --cream: #fdf6f0;
+    --green: #7a9e7e;
+    --sage: #b8cbb8;
+    --text: #3d2b31;
+    --muted: #8a6a72;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Lato', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  .petal-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .petal {
+    position: absolute;
+    width: 18px; height: 28px;
+    background: linear-gradient(135deg, #f2b8c6, #e88fa4);
+    border-radius: 50% 10% 50% 10%;
+    opacity: 0;
+    animation: fall linear infinite;
+    filter: blur(0.5px);
+  }
+  @keyframes fall {
+    0%   { transform: translateY(-60px) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.5; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+  }
+
+  .page {
+    display: none;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+  .page.active { display: flex; }
+
+  /* ── PAGE 1 ── */
+  #page1 { background: linear-gradient(160deg, #fff0f4 0%, #fde8ef 50%, #f5dce8 100%); }
+
+  .tulip-crown {
+    display: flex; align-items: flex-end; justify-content: center;
+    gap: 8px; margin-bottom: 2rem;
+    animation: floatIn 1s ease forwards;
+  }
+  .tulip-svg { animation: sway 3s ease-in-out infinite alternate; transform-origin: bottom center; }
+  .tulip-svg:nth-child(2) { animation-delay: 0.4s; }
+  .tulip-svg:nth-child(3) { animation-delay: 0.8s; }
+  @keyframes sway { 0%{transform:rotate(-4deg)} 100%{transform:rotate(4deg)} }
+  @keyframes floatIn { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:translateY(0)} }
+
+  .main-card {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(12px);
+    border: 1.5px solid rgba(232,160,176,0.4);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    max-width: 480px; width: 100%;
+    box-shadow: 0 20px 60px rgba(196,96,122,0.12);
+    animation: cardIn 1.2s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes cardIn { from{opacity:0;transform:translateY(40px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+  .small-tag {
+    font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--deep-rose); margin-bottom: 1rem; opacity: 0.8;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-style: italic; color: var(--text); line-height: 1.2; margin-bottom: 0.6rem;
+  }
+  .subtitle { font-size: 0.95rem; color: var(--muted); line-height: 1.6; margin-bottom: 2rem; }
+
+  .btn-row {
+    display: flex; gap: 1rem; justify-content: center;
+    align-items: center; flex-wrap: wrap;
+    position: relative; height: 60px;
+  }
+  .btn-yes {
+    background: linear-gradient(135deg, var(--deep-rose), #a84460);
+    color: white; border: none; padding: 0.85rem 2.2rem;
+    border-radius: 50px; font-family: 'Lato', sans-serif;
+    font-size: 1rem; font-weight: 600; letter-spacing: 0.05em;
+    cursor: pointer; box-shadow: 0 8px 25px rgba(196,96,122,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-yes:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 12px 32px rgba(196,96,122,0.45); }
+  .btn-yes:active { transform: scale(0.97); }
+  .btn-no {
+    background: white; color: var(--muted);
+    border: 1.5px solid var(--sage); padding: 0.85rem 2rem;
+    border-radius: 50px; font-family: 'Lato', sans-serif;
+    font-size: 1rem; cursor: pointer;
+    position: absolute; right: 0;
+    transition: none; user-select: none; -webkit-user-select: none;
+  }
+  .small-note { font-size: 0.72rem; color: var(--muted); margin-top: 1.6rem; opacity: 0.7; font-style: italic; }
+
+  /* ── PAGE 2 ── */
+  #page2 {
+    background: linear-gradient(160deg, #f0f7f1 0%, #e4f0e6 60%, #dceede 100%);
+    align-items: stretch;
+  }
+  .page2-inner { max-width: 500px; width: 100%; margin: 0 auto; padding: 2rem 0; }
+
+  .page2-header { text-align: center; margin-bottom: 2rem; animation: cardIn 0.8s ease forwards; }
+  .page2-header h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-style: italic; color: #3a5e3d; margin-bottom: 0.4rem; }
+  .page2-header p { font-size: 0.9rem; color: #6a8c6d; }
+
+  .cal-card, .time-card {
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(10px);
+    border-radius: 20px; border: 1px solid rgba(122,158,126,0.3);
+    padding: 1.5rem; box-shadow: 0 16px 40px rgba(60,100,64,0.1);
+    margin-bottom: 1.2rem;
+  }
+  .cal-card { animation: cardIn 1s .2s both; }
+  .time-card { animation: cardIn 1s .4s both; }
+
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .cal-nav button {
+    background: none; border: none; font-size: 1.3rem;
+    cursor: pointer; color: var(--green); padding: 4px 12px;
+    border-radius: 8px; transition: background 0.2s;
+  }
+  .cal-nav button:hover { background: rgba(122,158,126,0.15); }
+  .cal-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+  .cal-month-label { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #3a5e3d; font-weight: 700; text-transform: capitalize; }
+
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-day-name { text-align: center; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; color: #6a8c6d; padding: 4px 0 8px; text-transform: uppercase; }
+  .cal-cell {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-size: 0.85rem; cursor: pointer;
+    transition: all 0.18s; color: var(--text);
+  }
+  .cal-cell:hover:not(.disabled):not(.empty) { background: rgba(122,158,126,0.2); transform: scale(1.1); }
+  .cal-cell.selected { background: linear-gradient(135deg, #7a9e7e, #4e7a52); color: white; font-weight: 700; box-shadow: 0 4px 12px rgba(78,122,82,0.4); transform: scale(1.1); }
+  .cal-cell.disabled { color: #ccc; cursor: not-allowed; pointer-events: none; }
+  .cal-cell.empty { pointer-events: none; }
+
+  .time-card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: #3a5e3d; margin-bottom: 1rem; font-style: italic; }
+  .time-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .time-slot {
+    background: white; border: 1.5px solid rgba(122,158,126,0.3);
+    border-radius: 10px; padding: 8px 4px; text-align: center;
+    font-size: 0.8rem; cursor: pointer; transition: all 0.18s;
+    color: #3a5e3d; font-weight: 500;
+  }
+  .time-slot:hover { background: rgba(122,158,126,0.15); transform: translateY(-2px); }
+  .time-slot.selected { background: linear-gradient(135deg, #7a9e7e, #4e7a52); color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(78,122,82,0.35); transform: translateY(-2px); }
+
+  .btn-confirm {
+    width: 100%; background: linear-gradient(135deg, #7a9e7e, #4a7a4e);
+    color: white; border: none; padding: 1rem; border-radius: 50px;
+    font-family: 'Lato', sans-serif; font-size: 1rem; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.05em;
+    box-shadow: 0 8px 24px rgba(74,122,78,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: cardIn 1s .6s both;
+  }
+  .btn-confirm:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(74,122,78,0.45); }
+  .btn-confirm:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* ── PAGE 3 ── */
+  #page3 { background: linear-gradient(160deg, #fff5f7 0%, #ffe8ef 50%, #fddce6 100%); }
+  .confirm-card {
+    background: rgba(255,255,255,0.82); backdrop-filter: blur(12px);
+    border-radius: 24px; border: 1.5px solid rgba(232,160,176,0.4);
+    padding: 3rem 2.5rem; max-width: 440px; width: 100%;
+    box-shadow: 0 20px 60px rgba(196,96,122,0.12);
+    animation: cardIn 1s ease forwards; text-align: center;
+  }
+  .heart-anim { font-size: 3rem; animation: heartbeat 1s ease-in-out infinite alternate; }
+  @keyframes heartbeat { 0%{transform:scale(1)} 100%{transform:scale(1.18)} }
+  .confirm-card h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-style: italic; color: var(--deep-rose); margin: 1rem 0 0.5rem; }
+  .confirm-card p { font-size: 0.95rem; color: var(--muted); line-height: 1.7; }
+  .confirm-details {
+    background: rgba(248,220,226,0.4); border-radius: 14px;
+    padding: 1rem 1.5rem; margin: 1.5rem 0;
+    text-align: left; font-size: 0.9rem; line-height: 2; color: var(--text);
+  }
+  .confirm-details strong { color: var(--deep-rose); }
+  .sent-badge {
+    display: inline-block; background: rgba(122,158,126,0.15);
+    border: 1px solid rgba(122,158,126,0.4); color: #4a7a4e;
+    border-radius: 50px; padding: 0.4rem 1rem;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em; margin-top: 1rem;
+  }
+
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #3a3a3a; color: white; padding: 0.8rem 1.5rem;
+    border-radius: 50px; font-size: 0.85rem; font-weight: 600;
+    transition: transform 0.4s cubic-bezier(.22,1,.36,1); z-index: 100;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="petal-bg" id="petalBg"></div>
+
+<!-- ═══ PAGE 1 ═══ -->
+<div class="page active" id="page1">
+  <div class="tulip-crown">
+    <svg class="tulip-svg" width="50" height="90" viewBox="0 0 50 90" fill="none">
+      <line x1="25" y1="90" x2="25" y2="42" stroke="#7a9e7e" stroke-width="2.5"/>
+      <path d="M25 42 C22 32 14 28 14 18 C14 8 22 2 25 2 C28 2 36 8 36 18 C36 28 28 32 25 42Z" fill="#e8a0b0"/>
+      <path d="M25 42 C23 34 18 30 18 20 C18 12 21 5 25 2 Z" fill="#f5c0cc" opacity=".6"/>
+    </svg>
+    <svg class="tulip-svg" width="60" height="108" viewBox="0 0 60 108" fill="none">
+      <line x1="30" y1="108" x2="30" y2="52" stroke="#7a9e7e" stroke-width="2.8"/>
+      <path d="M30 52 C27 40 17 35 17 22 C17 9 25 2 30 2 C35 2 43 9 43 22 C43 35 33 40 30 52Z" fill="#c4607a"/>
+      <path d="M30 52 C28 42 21 37 21 24 C21 14 25 5 30 2 Z" fill="#de8090" opacity=".5"/>
+    </svg>
+    <svg class="tulip-svg" width="50" height="90" viewBox="0 0 50 90" fill="none">
+      <line x1="25" y1="90" x2="25" y2="42" stroke="#7a9e7e" stroke-width="2.5"/>
+      <path d="M25 42 C22 32 14 28 14 18 C14 8 22 2 25 2 C28 2 36 8 36 18 C36 28 28 32 25 42Z" fill="#e8a0b0"/>
+      <path d="M25 42 C23 34 18 30 18 20 C18 12 21 5 25 2 Z" fill="#f5c0cc" opacity=".6"/>
+    </svg>
+  </div>
+
+  <div class="main-card">
+    <p class="small-tag">✦ una pequeña pregunta ✦</p>
+    <h1>¿Quieres salir<br>conmigo?</h1>
+    <p class="subtitle">Hay un lugar bonito esperando,<br>y me gustaría que lo conocieras conmigo.</p>
+    <div class="btn-row" id="btnRow">
+      <button class="btn-yes" onclick="goToPage2()">Sí 🌷</button>
+      <button class="btn-no" id="btnNo">No</button>
+    </div>
+    <p class="small-note">* Ambas opciones fueron cuidadosamente consideradas.</p>
+  </div>
+</div>
+
+<!-- ═══ PAGE 2 ═══ -->
+<div class="page" id="page2">
+  <div class="page2-inner">
+    <div class="page2-header">
+      <h2>¡Qué emoción, Isabel! 🌷</h2>
+      <p>Elige el día y la hora que más te gusten</p>
+    </div>
+
+    <div class="cal-card">
+      <div class="cal-nav">
+        <button id="prevBtn" onclick="prevMonth()">‹</button>
+        <span class="cal-month-label" id="monthLabel"></span>
+        <button id="nextBtn" onclick="nextMonth()">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <div class="time-card">
+      <h3>¿A qué hora te queda bien?</h3>
+      <div class="time-slots" id="timeSlots">
+        <div class="time-slot" onclick="selectTime(this,'10:00')">10:00 am</div>
+        <div class="time-slot" onclick="selectTime(this,'11:00')">11:00 am</div>
+        <div class="time-slot" onclick="selectTime(this,'12:00')">12:00 pm</div>
+        <div class="time-slot" onclick="selectTime(this,'13:00')">01:00 pm</div>
+        <div class="time-slot" onclick="selectTime(this,'14:00')">02:00 pm</div>
+        <div class="time-slot" onclick="selectTime(this,'15:00')">03:00 pm</div>
+        <div class="time-slot" onclick="selectTime(this,'17:00')">05:00 pm</div>
+        <div class="time-slot" onclick="selectTime(this,'18:00')">06:00 pm</div>
+        <div class="time-slot" onclick="selectTime(this,'19:00')">07:00 pm</div>
+        <div class="time-slot" onclick="selectTime(this,'20:00')">08:00 pm</div>
+      </div>
+    </div>
+
+    <button class="btn-confirm" id="btnConfirm" onclick="confirmDate()">
+      Confirmar nuestra cita 💌
+    </button>
+  </div>
+</div>
+
+<!-- ═══ PAGE 3 ═══ -->
+<div class="page" id="page3">
+  <div class="confirm-card">
+    <div class="heart-anim">💐</div>
+    <h2>¡Está confirmado!</h2>
+    <p>Ya tengo muchas ganas de que llegue ese día. 🌷</p>
+    <div class="confirm-details" id="confirmDetails"></div>
+    <span class="sent-badge">✓ Confirmación enviada</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG — ya hardcodeado ──
+const EMAILJS_PUBLIC_KEY  = 'kLaCYVsshdp_sckQz';
+const EMAILJS_SERVICE_ID  = 'service_rb6busu';
+const EMAILJS_TEMPLATE_ID = 'template_belqzhx';
+const MY_EMAIL = 'angeladrian.lv@gmail.com';
+const MY_PHONE = '4421313434'; // para referencia en el correo
+
+// ── PETALS ──
+(function() {
+  const bg = document.getElementById('petalBg');
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.cssText = `left:${Math.random()*100}%;top:${-20-Math.random()*80}px;animation-duration:${6+Math.random()*8}s;animation-delay:${Math.random()*10}s;transform:rotate(${Math.random()*360}deg) scale(${0.6+Math.random()*0.8});opacity:0;`;
+    bg.appendChild(p);
+  }
+})();
+
+// ── NO BUTTON ESCAPE ──
+const btnNo = document.getElementById('btnNo');
+const btnRow = document.getElementById('btnRow');
+function dodgeNo() {
+  const maxX = btnRow.offsetWidth - btnNo.offsetWidth - 20;
+  const rx = (Math.random() * (maxX + 60)) - 30;
+  const ry = Math.random() > 0.5 ? -(25+Math.random()*45) : (25+Math.random()*45);
+  btnNo.style.transition = 'transform 0.22s cubic-bezier(.22,1,.36,1)';
+  btnNo.style.transform = `translate(${rx-(maxX/2)}px,${ry}px)`;
+  setTimeout(()=>{ btnNo.style.transition='none'; },250);
+}
+btnNo.addEventListener('mouseenter', dodgeNo);
+btnNo.addEventListener('touchstart', dodgeNo, {passive:true});
+btnNo.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); dodgeNo(); });
+
+// ── NAVIGATION ──
+function goToPage2() {
+  document.getElementById('page1').classList.remove('active');
+  document.getElementById('page2').classList.add('active');
+  window.scrollTo(0,0);
+}
+function showPage3() {
+  document.getElementById('page2').classList.remove('active');
+  document.getElementById('page3').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── CALENDAR ──
+const MIN_DATE = new Date(2026, 5, 1);
+let viewYear = 2026, viewMonth = 5;
+let selectedDate = null, selectedTime = null;
+const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function renderCal() {
+  document.getElementById('monthLabel').textContent = `${monthNames[viewMonth]} ${viewYear}`;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  dayNames.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-day-name'; el.textContent = d; grid.appendChild(el);
+  });
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+  for (let i=0; i<firstDay; i++) {
+    const el = document.createElement('div'); el.className='cal-cell empty'; grid.appendChild(el);
+  }
+  for (let d=1; d<=daysInMonth; d++) {
+    const date = new Date(viewYear, viewMonth, d);
+    const el = document.createElement('div'); el.className='cal-cell'; el.textContent=d;
+    if (date < MIN_DATE) { el.classList.add('disabled'); }
+    else {
+      el.onclick = () => selectDay(el, d);
+      if (selectedDate && date.toDateString()===selectedDate.toDateString()) el.classList.add('selected');
+    }
+    grid.appendChild(el);
+  }
+  document.getElementById('prevBtn').disabled = (viewYear===MIN_DATE.getFullYear() && viewMonth<=MIN_DATE.getMonth());
+}
+function prevMonth() {
+  if (viewYear===MIN_DATE.getFullYear() && viewMonth<=MIN_DATE.getMonth()) return;
+  viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} renderCal();
+}
+function nextMonth() { viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} renderCal(); }
+function selectDay(el, d) {
+  document.querySelectorAll('.cal-cell.selected').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDate = new Date(viewYear, viewMonth, d);
+}
+renderCal();
+
+// ── TIME ──
+function selectTime(el, t) {
+  document.querySelectorAll('.time-slot.selected').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTime = t;
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+// ── CONFIRM ──
+function confirmDate() {
+  if (!selectedDate) { showToast('¡Elige un día primero! 📅'); return; }
+  if (!selectedTime) { showToast('¡Falta elegir la hora! ⏰'); return; }
+
+  const dateStr = selectedDate.toLocaleDateString('es-MX', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  const [h] = selectedTime.split(':');
+  const hour = parseInt(h);
+  const timeStr = `${hour>12?hour-12:hour}:00 ${hour>=12?'pm':'am'}`;
+
+  document.getElementById('confirmDetails').innerHTML = `
+    <strong>📅 Fecha:</strong> ${dateStr}<br>
+    <strong>🕐 Hora:</strong> ${timeStr}
+  `;
+
+  sendEmail(dateStr, timeStr);
+  showPage3();
+}
+
+// ── EMAIL ──
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+function sendEmail(dateStr, timeStr) {
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email: MY_EMAIL,
+    reply_to: MY_EMAIL,
+    date: dateStr,
+    time: timeStr,
+    phone: MY_PHONE
+  }).catch(err => console.warn('EmailJS:', err));
+}
+</script>
+</body>
+</html>
